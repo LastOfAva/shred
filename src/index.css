@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0a0a0a;
+    color: #e8e8e8;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-color: #0a0a0a;
+    min-height: 100dvh;
+    /* iOS safe area */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #111;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-black font-semibold px-4 py-2 rounded-lg text-sm transition-all active:scale-95 hover:bg-yellow-300;
+  }
+
+  .btn-ghost {
+    @apply border border-[#2a2a2a] text-[#888] px-4 py-2 rounded-lg text-sm transition-all active:scale-95 hover:border-[#444] hover:text-[#ccc];
+  }
+
+  .card {
+    @apply bg-[#1a1a1a] rounded-xl border border-[#2a2a2a];
+  }
+
+  .accent-dot {
+    @apply w-2 h-2 rounded-full bg-accent inline-block;
+  }
+}
+
+.accent-glow {
+  text-shadow: 0 0 20px rgba(232, 255, 60, 0.4);
+}
+
+/* Checkbox custom */
+input[type="checkbox"] {
+  accent-color: #e8ff3c;
+  width: 18px;
+  height: 18px;
+}
