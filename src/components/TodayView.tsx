@@ -183,26 +183,6 @@ export default function TodayView({ date, store, onGoToToday }: Props) {
               />
             )}
 
-            {session && (
-              <div className="card p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-sm">Sessione serale</p>
-                  <p className="text-xs text-[#555]">{session.name} completata</p>
-                </div>
-                <button
-                  onClick={() => store.updateDay(date, { sessionDone: !log?.sessionDone })}
-                  disabled={!isToday && date > today}
-                  className={`w-10 h-6 rounded-full transition-colors ${
-                    log?.sessionDone ? 'bg-accent' : 'bg-[#2a2a2a]'
-                  } disabled:opacity-40`}
-                >
-                  <span className={`block w-5 h-5 rounded-full bg-white shadow transition-transform mx-0.5 ${
-                    log?.sessionDone ? 'translate-x-4' : ''
-                  }`} />
-                </button>
-              </div>
-            )}
-
             {isToday && !log?.escapedHatch && !log?.sessionDone && (
               <EscapeHatch onActivate={() => store.useEscapeHatch(date)} />
             )}
@@ -270,7 +250,7 @@ function StatusBar({ phase, phaseLabel, weekNum, dayNum, streak, session, date }
             Giorno <span className="text-[#ccc] font-semibold">{dayNum}</span><span className="text-[#555]">/30</span>
           </span>
           {streak > 0 && (
-            <span className="mono text-xs text-accent font-bold">🔥 {streak}</span>
+            <span key={streak} className="mono text-sm text-accent font-bold streak-pulse">🔥 {streak}</span>
           )}
         </div>
       </div>
@@ -379,15 +359,38 @@ function SessionCard({ session, phase, weekNum, log, date, isToday, today, store
   const phaseKey = weekNum <= 2 ? 's12' : weekNum === 3 ? 's3' : 's4'
   const doneCount = completed.filter(id => id.startsWith(session.id)).length
 
+  const BLOCK_COLORS: Record<string, { border: string; text: string; bar: string }> = {
+    A: { border: 'border-fuchsia-900/40', text: 'text-fuchsia-400', bar: 'bg-fuchsia-500' },
+    B: { border: 'border-sky-900/40',     text: 'text-sky-400',     bar: 'bg-sky-500' },
+    C: { border: 'border-green-900/40',   text: 'text-green-400',   bar: 'bg-green-500' },
+    D: { border: 'border-orange-900/40',  text: 'text-orange-400',  bar: 'bg-orange-500' },
+    E: { border: 'border-red-900/40',     text: 'text-red-400',     bar: 'bg-red-500' },
+  }
+  const bc = BLOCK_COLORS[session.id] ?? BLOCK_COLORS['A']
+  const pct = session.exercises.length > 0 ? Math.round((doneCount / session.exercises.length) * 100) : 0
+
   return (
-    <div className="card p-4 flex flex-col gap-4">
+    <div className={`card p-4 flex flex-col gap-4 border ${bc.border}`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-bold text-sm">{session.name}</p>
-          <p className="text-xs text-[#555]">{session.duration} · {session.structure}</p>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className={`w-2 h-2 rounded-full ${bc.bar}`} />
+            <p className={`font-bold text-sm ${bc.text}`}>{session.name}</p>
+          </div>
+          <p className="text-xs text-[#555] pl-4">{session.duration} · {session.structure}</p>
         </div>
-        <span className="mono text-xs text-[#555]">{doneCount}/{session.exercises.length}</span>
+        <div className="text-right">
+          <p className={`mono text-sm font-bold ${doneCount > 0 ? bc.text : 'text-[#555]'}`}>{doneCount}<span className="text-[#555] text-xs">/{session.exercises.length}</span></p>
+          {doneCount > 0 && <p className="text-[10px] text-[#555]">{pct}%</p>}
+        </div>
       </div>
+
+      {/* Progress bar within session */}
+      {doneCount > 0 && (
+        <div className="h-1.5 bg-[#111] rounded-full overflow-hidden">
+          <div className={`h-full rounded-full bar-animated ${bc.bar}`} style={{ width: `${pct}%` }} />
+        </div>
+      )}
 
       {session.tempoNote && phase === 'tecnica' && (
         <p className="text-xs text-blue-400 bg-blue-950/30 rounded px-3 py-1.5">ℹ {session.tempoNote}</p>

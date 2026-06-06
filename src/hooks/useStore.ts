@@ -227,13 +227,35 @@ export function useStore() {
         escapedHatch: false, completedExercises: [], xpEarned: 0,
       }
       const completed = existing.completedExercises ?? []
-      const nextCompleted = completed.includes(exerciseId)
-        ? completed.filter(id => id !== exerciseId)
-        : [...completed, exerciseId]
+      const isAdding = !completed.includes(exerciseId)
+      const nextCompleted = isAdding
+        ? [...completed, exerciseId]
+        : completed.filter(id => id !== exerciseId)
+
       const updated: DayLog = { ...existing, completedExercises: nextCompleted }
+
+      // Adding a session exercise (not mobility) marks the session as done for streak
+      if (isAdding && !exerciseId.startsWith('mob_')) {
+        updated.sessionDone = true
+      }
+
+      // Recompute XP
+      let xp = 0
+      if (updated.sessionDone) xp += XP_PER_SESSION
+      if (updated.cardioDone)  xp += XP_PER_CARDIO
+      if (updated.escapedHatch) xp += XP_PER_ESCAPE
+      updated.xpEarned = xp
+
+      // Recompute status
+      if (updated.escapedHatch) updated.status = 'rest_active'
+      else if (updated.sessionDone && updated.cardioDone) updated.status = 'done'
+      else if (updated.sessionDone || updated.cardioDone) updated.status = 'partial'
+      else updated.status = null
+
       const newDays = { ...prev.days, [date]: updated }
       const { current, best } = computeStreak(newDays)
       const totalXp = Object.values(newDays).reduce((sum, d) => sum + (d.xpEarned ?? 0), 0)
+        + (current >= 7 && best >= 7 ? XP_PER_STREAK_7 * Math.floor(best / 7) : 0)
       const tempState = { ...prev, days: newDays, streakCurrent: current, streakBest: best, totalXp }
       const earnedBadges = checkBadges(tempState)
       return { ...prev, days: newDays, streakCurrent: current, streakBest: best, totalXp, earnedBadges }

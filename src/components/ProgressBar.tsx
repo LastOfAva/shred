@@ -4,16 +4,17 @@ interface Props {
 }
 
 export default function ProgressBar({ value, label }: Props) {
+  const clamped = Math.min(100, Math.max(0, value))
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between items-center">
         {label && <span className="text-xs text-[#555]">{label}</span>}
-        <span className="mono text-xs text-accent ml-auto">{value}%</span>
+        <span className="mono text-xs text-accent ml-auto font-semibold">{clamped}%</span>
       </div>
-      <div className="h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+      <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden border border-[#2a2a2a]">
         <div
-          className="h-full bg-accent rounded-full transition-all duration-500"
-          style={{ width: `${Math.min(100, value)}%` }}
+          className="h-full bg-accent rounded-full bar-animated"
+          style={{ width: `${clamped}%` }}
         />
       </div>
     </div>
