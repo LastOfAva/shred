@@ -27,6 +27,7 @@ export interface AppState {
   earnedBadges: string[]   // badge IDs
   totalXp: number
   lastUpdated: string
+  seenPhaseAlerts: string[] // ['progressione', 'picco']
 }
 
 const STORAGE_KEY = 'shred_state_v1'
@@ -40,6 +41,7 @@ const initialState: AppState = {
   earnedBadges: [],
   totalXp: 0,
   lastUpdated: new Date().toISOString(),
+  seenPhaseAlerts: [],
 }
 
 function loadState(): AppState {
@@ -257,6 +259,13 @@ export function useStore() {
     })
   }, [])
 
+  const markPhaseAlertSeen = useCallback((phase: string) => {
+    setState(prev => ({
+      ...prev,
+      seenPhaseAlerts: [...(prev.seenPhaseAlerts ?? []), phase],
+    }))
+  }, [])
+
   const exportData = useCallback((): string => {
     return JSON.stringify(state, null, 2)
   }, [state])
@@ -276,6 +285,7 @@ export function useStore() {
     updateDay,
     toggleExercise,
     useEscapeHatch,
+    markPhaseAlertSeen,
     exportData,
     importData,
   }
